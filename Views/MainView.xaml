@@ -1,0 +1,219 @@
+﻿<Window x:Class="RealScraper.Views.MainView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:behaviors="clr-namespace:RealScraper.Core.Behaviors"
+        mc:Ignorable="d"
+        Title="Real Scraper"
+        Width="1024" Height="768" 
+        MinWidth="640" MinHeight="480"
+        WindowStartupLocation="CenterScreen" >
+    <Window.Resources>
+        <!-- Real Auction URL DataTemplate -->
+        <DataTemplate x:Key="AuctionUrlTemplate">
+            <Border Padding="12 6" Background="{StaticResource Brushes.ContrastPrimary}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Auction URL Label -->
+                    <TextBlock Text="Auction URL"
+                                Margin="4 0 0 4" 
+                                Foreground="#FFFFFF"
+                                FontSize="{StaticResource Fonts.Small}"/>
+
+                    <!-- Auction URL TextBox -->
+                    <TextBox Grid.Row="1" Style="{StaticResource Textbox.Dark}" Text="{Binding AuctionURL, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <!-- Action Buttons -->
+                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                        <!-- Save-->
+                        <Button Width="32"
+                                Foreground="White"                                  
+                                Margin="8 0"                                     
+                                IsDefault="True"
+                                Style="{StaticResource Buttons.Save}"
+                                Command="{Binding UpdateAuctionURLCommand}"  />
+                        <!-- Close -->
+                        <Button Width="32"
+                                Foreground="White"
+                                Command="{Binding CloseSettingsCommand}"
+                                Style="{StaticResource Buttons.Close}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- Parcel Details URL DataTemplate -->
+        <DataTemplate x:Key="ParcelDetailsTemplate">
+            <Border Padding="12 6"  Background="{StaticResource Brushes.ContrastPrimary}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Parcel Details URL Label -->
+                    <TextBlock Text="Parcel Details URL"
+                                Margin="4 0 0 4" 
+                                Foreground="#FFFFFF"
+                                FontSize="{StaticResource Fonts.Small}"/>
+
+                    <!-- Auction URL TextBox -->
+                    <TextBox Grid.Row="1" Style="{StaticResource Textbox.Dark}" Text="{Binding ParcelDetailsURL, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <!-- Action Buttons -->
+                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                        <!-- Save-->
+                        <Button Width="32"
+                                Foreground="White"                                  
+                                Margin="8 0"                                     
+                                IsDefault="True"
+                                Style="{StaticResource Buttons.Save}"
+                                Command="{Binding UpdateParcelDetailsURLCommand}"  />
+                        <!-- Close -->
+                        <Button Width="32"
+                                Foreground="White"
+                                Command="{Binding CloseSettingsCommand}"
+                                Style="{StaticResource Buttons.Close}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Background="{StaticResource Brushes.AccentPrimary}" Height="70" Padding="12" >
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Logo -->
+                <TextBlock Text="REAL SCRAPER" Style="{StaticResource TextBlocks.Description}" HorizontalAlignment="Left"/>
+
+                <!-- Scrape Button -->
+                <Button Grid.Column="2" 
+                        Height="24" 
+                        Content="START" 
+                        Command="{Binding ScrapeCommand}"
+                        IsEnabled="{Binding CanScrape}" 
+                        Style="{StaticResource Buttons.Secondary}" />
+            </Grid>
+        </Border>
+
+        <!-- List of Parcels -->
+        <DataGrid Grid.Row="1" x:Name="ItemsDataGrid" ItemsSource="{Binding AuctionItems}" LoadingRow="DataGrid_LoadingRow"
+                  behaviors:DataGridSelectionBehavior.SelectedItems="{Binding SelectedRows, Mode=TwoWay}">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Copy" Command="{Binding CopyCommand}" 
+                      IsEnabled="{Binding Items.Count, ElementName=ItemsDataGrid, Converter={StaticResource GreaterThanZeroConverter}}" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+            <DataGrid.Columns>
+                <!--<DataGridTextColumn IsReadOnly="True" Header="Type" Binding="{Binding AuctionType}"/>-->
+                <DataGridTextColumn Header="Case" Binding="{Binding CaseNumber}" />
+                <DataGridTextColumn Header="Cert" Binding="{Binding CertificateNumber}" />
+                <DataGridTextColumn Header="Bid" Binding="{Binding OpeningBid, StringFormat=C}" />
+                <DataGridTextColumn Header="Assessed" Binding="{Binding AssessedValue, StringFormat=C}" />
+                <DataGridTextColumn Header="Address" Binding="{Binding PropertyAddress}" />
+                <DataGridTextColumn Header="Parcel ID" Binding="{Binding ParcelID}" />
+                <DataGridTemplateColumn Header="Appraisal">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock>
+                                <Hyperlink Command="{Binding DataContext.NavigateDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">
+                                    <TextBlock Text="Details"/>
+                                </Hyperlink>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <!-- Ensure copied content includes the URL -->
+                    <DataGridTemplateColumn.ClipboardContentBinding>
+                        <Binding Path="URL"/>
+                    </DataGridTemplateColumn.ClipboardContentBinding>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Regrid">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock>
+                                <Hyperlink Command="{Binding DataContext.NavigateRegridCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">
+                                    <TextBlock Text="Regrid"/>
+                                </Hyperlink>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <!-- Ensure copied content includes the URL -->
+                    <DataGridTemplateColumn.ClipboardContentBinding>
+                        <Binding Path="Regrid"/>
+                    </DataGridTemplateColumn.ClipboardContentBinding>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Nearby Parcels" Binding="{Binding MatchingParcels}" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Padding="12" Background="{StaticResource Theme.Showcase}">
+            <Grid>
+                <!-- Definitions -->
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <!-- Auction URL-->
+                <Button Style="{StaticResource Buttons.Edit}" Width="20" Margin="0 0 4 0" Command="{Binding AuctionURLEditCommand}" />
+                <TextBlock Grid.Column="1" Text="Auction URL:" FontSize="{StaticResource Fonts.Small}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                <Button Grid.Column="2" Content="{Binding AuctionURL}" Command="{Binding NavigateCommand}" Style="{StaticResource Buttons.Hyperlink}" Margin="8 0 0 0" />
+
+                <!-- Details URL-->
+                <Button Grid.Row="1" Style="{StaticResource Buttons.Edit}" Width="20" Margin="0 4 4 0" Command="{Binding ParcelDetailEditCommand}"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="Property URL:" FontSize="{StaticResource Fonts.Small}" Margin="0 4 0 0" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                <Button Grid.Row="1" Grid.Column="2" Content="{Binding ParcelDetailsURL, TargetNullValue='No URL Provided'}"  Style="{StaticResource Buttons.Hyperlink}" Margin="8 4 0 0" />
+            </Grid>
+        </Border>
+
+        <!-- Auction URL Edit -->
+        <ContentControl Grid.Row="2" Content="{Binding}" ContentTemplate="{StaticResource AuctionUrlTemplate}"
+                        Style="{StaticResource AnimatedContentControl}" Visibility="{Binding ShowAuctionSettings, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+        <!-- Parcel Details  URL Edit -->
+        <ContentControl Grid.Row="2" Content="{Binding}" ContentTemplate="{StaticResource ParcelDetailsTemplate}"
+                        Style="{StaticResource AnimatedContentControl}" Visibility="{Binding ShowParcelDetailSettings, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+        <!--  Show during startup -->
+        <Grid Grid.RowSpan="3"
+              Visibility="{Binding ShowStartPage, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Image Stretch="UniformToFill" Source="{StaticResource Bitmaps.Start}" />
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Margin="24" Text="Welcome to the Real Auction Data Scraper" Style="{StaticResource TextBlocks.Description}" />
+                <Button Content="GET STARTED" Command="{Binding StartCommand}" Style="{StaticResource Buttons.Secondary}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
